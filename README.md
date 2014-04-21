@@ -15,5 +15,8 @@ Upload data
 ============
 
 workon hg19
-# This takes like 20 minutes.
+This takes like 20 minutes.
+To upload chromosome 1
 ./manage.py load_chromosome --path /path/to/chr1.fa --chromosome 1 
+To upload chromosome 2
+./manage.py load_chromosome --path /path/to/chr2.fa --chromosome 2
