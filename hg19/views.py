@@ -4,6 +4,8 @@ from django.db import models
 from django.db.models.loading import get_model
 import django_tables2 as tables
 import time
+from haystack.query import SearchQuerySet
+from search_indexes import SequenceMIndex
 
 
 class SearchResultsTable(tables.Table):
@@ -33,10 +35,23 @@ def search(request):
                         if m.__name__.startswith('Sequence'):
                             chromosome_to_search.append((m, m.__name__.replace('Sequence', '')))
                 initial_time = time.time()
-                for S, c in chromosome_to_search:
-                    q = S.objects.filter(seq__contains=seq).order_by(order)[:limit]
-                    for s in q:
-                        seqs.append({'id': s.id, 'seq': s.seq, 'chromosome': c})
+                if 'search_postgres' in request.GET:
+                    for S, c in chromosome_to_search:
+                        q = S.objects.filter(seq__contains=seq).order_by(order)[:limit]
+                        for s in q:
+                            seqs.append({'id': s.id, 'seq': s.seq, 'chromosome': c})
+                elif 'search_elasticsearch' in request.GET:
+                    for S, c in chromosome_to_search:
+                        #q = SearchQuerySet().filter(text__contains=seq)[:limit]
+                        q = SearchQuerySet().all().filter(text__contains=seq).models(S)
+                        for r in q:
+                            s = S.objects.get(id=r.pk)
+                            # haystack or elasticsearch gives similar matches, not exact
+                            if seq in s.seq:
+                                seqs.append({'id': s.id, 'seq': s.seq, 'chromosome': c})
+                                if len(seqs) > limit:
+                                    break
+
                 final_time = time.time()
                 context['search_time'] = final_time - initial_time
                 table = SearchResultsTable(seqs)

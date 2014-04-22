@@ -104,3 +104,7 @@ class SequenceX(Sequence):
 
 class SequenceY(Sequence):
     pass
+
+class SequenceM(Sequence):
+    "Mitocondrial"
+    pass
