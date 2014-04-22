@@ -1,7 +1,7 @@
 from django import forms
 
 class SearchForm(forms.Form):
-    seq = forms.CharField(required=False, label='DNA sequence', min_length=5)
+    seq = forms.CharField(required=False, label='DNA sequence', min_length=5, max_length=100)
     chromosome = forms.ChoiceField(label='Chromosome', required=False)
 
     def __init__(self, *args, **kwargs):
