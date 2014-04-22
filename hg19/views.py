@@ -3,7 +3,7 @@ from forms import SearchForm
 from django.db import models
 from django.db.models.loading import get_model
 import django_tables2 as tables
-#from models import *
+import time
 
 
 class SearchResultsTable(tables.Table):
@@ -32,11 +32,13 @@ def search(request):
                     for m in models.get_models():
                         if m.__name__.startswith('Sequence'):
                             chromosome_to_search.append((m, m.__name__.replace('Sequence', '')))
+                initial_time = time.time()
                 for S, c in chromosome_to_search:
                     q = S.objects.filter(seq__contains=seq).order_by(order)[:limit]
                     for s in q:
                         seqs.append({'id': s.id, 'seq': s.seq, 'chromosome': c})
-
+                final_time = time.time()
+                context['search_time'] = final_time - initial_time
                 table = SearchResultsTable(seqs)
                 context['table'] = table
                 context['seqs'] = seqs
