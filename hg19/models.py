@@ -1,7 +1,7 @@
 from django.db import models
 
 class Sequence(models.Model):
-    seq = models.CharField(max_length=50)
+    seq = models.TextField()
 
     def __unicode__(self):
         return u"{seq}".format(seq=self.seq)
