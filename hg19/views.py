@@ -35,14 +35,18 @@ def search(request):
                         if m.__name__.startswith('Sequence'):
                             chromosome_to_search.append((m, m.__name__.replace('Sequence', '')))
                 initial_time = time.time()
-                if 'search_postgres' in request.GET:
+                if 'complex_search' in request.GET:
+                    for S, c in chromosome_to_search:
+                        q = S.objects.search_between(S, seq)
+                        for s in q:
+                            seqs.append({'id': s[0], 'seq': s[1], 'chromosome': c})
+                elif 'search_postgres' in request.GET:
                     for S, c in chromosome_to_search:
                         q = S.objects.filter(seq__contains=seq).order_by(order)[:limit]
                         for s in q:
                             seqs.append({'id': s.id, 'seq': s.seq, 'chromosome': c})
                 elif 'search_elasticsearch' in request.GET:
                     for S, c in chromosome_to_search:
-                        #q = SearchQuerySet().filter(text__contains=seq)[:limit]
                         q = SearchQuerySet().all().filter(text__contains=seq).models(S)
                         for r in q:
                             s = S.objects.get(id=r.pk)
