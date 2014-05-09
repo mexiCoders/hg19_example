@@ -6,12 +6,23 @@ import django_tables2 as tables
 import time
 from haystack.query import SearchQuerySet
 from search_indexes import SequenceMIndex
+from django.utils.safestring import mark_safe
 
+
+class SeqColumn(tables.Column):
+    def render(self, value, record, **kwords):
+        query = kwords['table'].query
+        html_seq = value.replace(query, '<span class="mark_text">{query}</span>'.format(query=query))
+        return mark_safe(html_seq)
 
 class SearchResultsTable(tables.Table):
+    def __init__(self,  *args, **kwargs):
+        self.query = kwargs.pop('query')
+        super(SearchResultsTable, self).__init__(*args, **kwargs)
+
     chromosome = tables.Column()
     id = tables.Column()
-    seq = tables.Column()
+    seq = SeqColumn(verbose_name='Sequence')
 
 
 def search(request):
@@ -58,7 +69,7 @@ def search(request):
 
                 final_time = time.time()
                 context['search_time'] = final_time - initial_time
-                table = SearchResultsTable(seqs)
+                table = SearchResultsTable(seqs, query=seq)
                 context['table'] = table
                 context['seqs'] = seqs
 
