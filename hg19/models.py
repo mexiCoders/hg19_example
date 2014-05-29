@@ -1,8 +1,12 @@
 from django.db import models
 from django.db import connection
+from fields import SequenceField
+from django.db import connection
 
 class SequenceManager(models.Manager):
     def get_db_where_ors(self, s):
+        """Builds "where" statement to be used when searching between adjacent records
+        """
         ors = []
         for i in range(1,len(s)):
             pre = '%' + s[:i].replace("'", "''")
@@ -144,3 +148,84 @@ class SequenceY(Sequence):
 class SequenceM(Sequence):
     "Mitocondrial"
     pass
+
+
+
+class ChromosomeSequenceManager(models.Manager):
+    def get_queryset(self):
+        return super(ChromosomeSequenceManager, self).get_queryset().defer('sequence')
+
+    def find_all_positions(self, chromosome, query, limit=100):
+        """ Returns an array with the positions of the occurrences of a substring in a chromosome
+        """
+        cursor = connection.cursor()
+        sql = """
+            select strpos(substr(sequence, %s, char_length(sequence)), %s)
+            from hg19_chromosomesequence
+            where id = %s
+            ;
+        """
+        positions = []
+        pos = 1
+        found = True
+        count = 0
+        while found and count < limit:
+            count += 1
+            found = False
+            start_search = pos
+            if pos > 1:
+                start_search = pos + 1
+            cursor.execute(sql, (start_search, query, chromosome.id))
+            for row in cursor.fetchall():
+                if row[0] > 0:
+                    found = True
+                    if positions:
+                        pos += row[0]
+                    else:
+                        pos += row[0] - 1
+                    positions.append(pos)
+        return positions
+
+    def find_position(self, chromosome, query):
+        """ Returns the position of the first occurrence of a substring in a chromosome
+        """
+        cursor = connection.cursor()
+        sql = """
+            select strpos(sequence, %s)
+            from hg19_chromosomesequence
+            where id = %s
+            ;
+        """
+        cursor.execute(sql, (query, chromosome.id))
+        for row in cursor.fetchall():
+            return row[0] - 1
+        return None
+
+    def get_substring(self, chromosome, begin, length):
+        cursor = connection.cursor()
+        sql = """
+            select substr(sequence, %s, %s)
+            from hg19_chromosomesequence
+            where id = %s
+            ;
+        """
+        cursor.execute(sql, (begin, length, chromosome.id))
+        for row in cursor.fetchall():
+            return row[0]
+        return None
+
+
+# avoid south migration problem
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^hg19\.fields\.SequenceField"])
+class ChromosomeSequence(models.Model):
+    """
+    One registry per chromosome in postBIS format
+    """
+    name = models.TextField()
+    sequence = SequenceField()
+
+    objects = ChromosomeSequenceManager()
+
+    def get_substring(self, begin, length):
+        return ChromosomeSequence.objects.get_substring(self, begin, length)
