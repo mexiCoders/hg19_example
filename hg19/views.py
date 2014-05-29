@@ -7,6 +7,7 @@ import time
 from haystack.query import SearchQuerySet
 from search_indexes import SequenceMIndex
 from django.utils.safestring import mark_safe
+from models import ChromosomeSequence
 
 
 class SeqColumn(tables.Column):
@@ -66,6 +67,15 @@ def search(request):
                                 seqs.append({'id': s.id, 'seq': s.seq, 'chromosome': c})
                                 if len(seqs) > limit:
                                     break
+                elif 'search_postbis' in request.GET:
+                    if chromosome:
+                        cs = ChromosomeSequence.objects.filter(name=chromosome)
+                    else:
+                        cs = ChromosomeSequence.objects.all()
+                    for c in cs:
+                        pos = ChromosomeSequence.objects.find_all_positions(c, seq)
+                        for p in pos:
+                            seqs.append({'id': p, 'seq': c.get_substring(p-20, 40+len(seq)), 'chromosome': c.name})
 
                 final_time = time.time()
                 context['search_time'] = final_time - initial_time
