@@ -40,6 +40,7 @@ INSTALLED_APPS = (
     'south',
     'django_tables2',
     'haystack',
+    'bootstrap3',
     # internal
     'hg19',
 )
