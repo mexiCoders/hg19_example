@@ -21,6 +21,9 @@ class SearchResultsTable(tables.Table):
         self.query = kwargs.pop('query')
         super(SearchResultsTable, self).__init__(*args, **kwargs)
 
+    class Meta:
+        attrs = {"class": "table table-striped table-bordered table-condensed"}
+
     chromosome = tables.Column()
     id = tables.Column()
     seq = SeqColumn(verbose_name='Sequence')
