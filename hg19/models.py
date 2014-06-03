@@ -214,6 +214,18 @@ class ChromosomeSequenceManager(models.Manager):
             return row[0]
         return None
 
+    def get_length(self, chromosome):
+        cursor = connection.cursor()
+        sql = """
+            select char_length(sequence)
+            from hg19_chromosomesequence
+            where id = %s
+            ;
+        """
+        cursor.execute(sql, (chromosome.id,))
+        for row in cursor.fetchall():
+            return row[0]
+        return None
 
 # avoid south migration problem
 from south.modelsinspector import add_introspection_rules
@@ -229,3 +241,6 @@ class ChromosomeSequence(models.Model):
 
     def get_substring(self, begin, length):
         return ChromosomeSequence.objects.get_substring(self, begin, length)
+
+    def get_length(self):
+        return ChromosomeSequence.objects.get_length(self)
