@@ -1,0 +1,7 @@
+{% extends "hg19/base.html" %}
+{% load staticfiles %}
+
+{% block navigation %}
+    <li><a href="{% url 'search' %}">Exact match</a></li>
+    <li><a href="{% url 'local_alignment' %}">Local Alignment</a></li>
+{% endblock %}

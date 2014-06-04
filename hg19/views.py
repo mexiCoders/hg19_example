@@ -109,7 +109,7 @@ class LocalAlignmentTable(tables.Table):
 def local_alignment(request):
     context = {}
     form = LocalAlignmentForm()
-    if request.method == 'GET':
+    if request.method == 'GET' and 'search' in request.GET:
         form = LocalAlignmentForm(request.GET)
         if form.is_valid():
             seq = form.cleaned_data['seq']
@@ -146,15 +146,11 @@ def local_alignment(request):
                                 e = end + 20
                                 row = {'chromosome': c.name, 'position': start+begin, 'score': score, 'sequences': aln_c[b:e] + ',' + aln_seq[b:e]}
                                 rows.append(row)
-                                print aln_c[b:e] #DELETE
-                                print aln_seq[b:e] #DELETE
-                                print score, begin, end #DELETE
                             start += length
                     table = LocalAlignmentTable(rows)
                     context['table'] = table
 
                 final_time = time.time()
-                print final_time - initial_time #DELETE
                 context['search_time'] = final_time - initial_time
     context['form'] = form
     return render(request, 'hg19/local_alignment.html', context)
