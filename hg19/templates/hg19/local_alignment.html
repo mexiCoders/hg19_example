@@ -1,25 +1,28 @@
+{% extends "hg19/base_menu.html" %}
 {% load staticfiles %}
 {% load render_table from django_tables2 %}
 {% load bootstrap3 %}
-<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
 
-<style>
-table {
-    font-family:courier, "courier new", monospace;
-    font-size:1em;
-    color:#000;
-    background-color:#fff;
-}
-</style>
-</style>
+{% block head %}
+    <style>
+    table {
+        font-family:courier, "courier new", monospace;
+        font-size:1em;
+        color:#000;
+        background-color:#fff;
+    }
+    </style>
+{% endblock %}
 
-<form action='.' method="get">
-{{ form }}
-<input type="submit" value="Search" name="search"/>
-</form>
+{% block body %}
+    <form action='.' method="get">
+    {{ form }}
+    <input type="submit" value="Search" name="search"/>
+    </form>
 
-{% if table %}
-    {% render_table table %}
-    <br>
-    Search time: {{ search_time }} s
-{% endif %}
+    {% if table %}
+        {% render_table table %}
+        <br>
+        Search time: {{ search_time }} s
+    {% endif %}
+{% endblock %}
