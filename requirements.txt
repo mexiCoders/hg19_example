@@ -5,4 +5,4 @@ django-tables2
 pyelasticsearch
 django-haystack
 django-bootstrap3
-
+biopython
