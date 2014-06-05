@@ -36,7 +36,14 @@ class Command(BaseCommand):
                 nf.write(l)
         cf.close()
         nf.close()
-        
+
+        #avoid SQL injections
+        chromosome = "'" + chromosome.replace("'", "''") +"'"
+        #remove old data
+        cmd = 'psql {db_name} -c "delete from {db_table} where name = {chromosome};"'.format(db_name=db_settings['NAME'], db_table=ChromosomeSequence._meta.db_table, chromosome=chromosome)
+        os.system(cmd)
+
+        #load chromosome data
         cmd = "psql {db_name} -c '\COPY {db_table} (name, sequence) FROM {nf_path}'".format(db_name=db_settings['NAME'], db_table=ChromosomeSequence._meta.db_table, nf_path=nf_path)
         os.system(cmd)
         os.remove(nf_path)

@@ -27,13 +27,16 @@ class Command(BaseCommand):
         if reg_len:
             reg_len = int(reg_len)
         else:
-            reg_len = 50
+            reg_len = 200
         convert_to_upper = False
         ctu = options.get('convert_to_upper')
         if ctu and ctu.lower().startswith('t'):
             convert_to_upper = True
 
         commit_len = int(10000 / reg_len)
+
+        # remove old data
+        Sequence.objects.all().delete()
 
         f = open(file_path, 'r')
         l = 'line'
