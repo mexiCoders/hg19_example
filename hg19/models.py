@@ -21,7 +21,7 @@ class SequenceManager(models.Manager):
 
         seq = seq.replace("'", "''")
         query = """
-        select s1.id, s1.seq || s2.seq as combined_seq 
+        select s1.id, s1.seq || s2.seq as combined_seq, s1.position
         from {table_name} s1
             inner join {table_name} s2 on (s1.id + 1) = s2.id
         where s1.seq like {seq} 
@@ -40,6 +40,7 @@ class SequenceManager(models.Manager):
 
 class Sequence(models.Model):
     seq = models.TextField()
+    position = models.IntegerField(null=True)
 
     objects = SequenceManager()
 
