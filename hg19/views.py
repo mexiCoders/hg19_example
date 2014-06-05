@@ -26,13 +26,13 @@ class SearchResultsTable(tables.Table):
         attrs = {"class": "table table-striped table-bordered table-condensed"}
 
     chromosome = tables.Column()
-    id = tables.Column()
+    position = tables.Column()
     seq = SeqColumn(verbose_name='Sequence')
 
 
 def search(request):
     limit = 1000
-    order = 'id'
+    order = 'position'
     context = {}
     form = SearchForm()
     if request.method == 'GET':
@@ -55,12 +55,16 @@ def search(request):
                     for S, c in chromosome_to_search:
                         q = S.objects.search_between(S, seq)
                         for s in q:
-                            seqs.append({'id': s[0], 'seq': s[1], 'chromosome': c})
+                            #start count from 1
+                            position = s[2]+s[1].index(seq)+1
+                            seqs.append({'position': position, 'seq': s[1], 'chromosome': c})
                 elif 'search_postgres' in request.GET:
                     for S, c in chromosome_to_search:
                         q = S.objects.filter(seq__contains=seq).order_by(order)[:limit]
                         for s in q:
-                            seqs.append({'id': s.id, 'seq': s.seq, 'chromosome': c})
+                            #start count from 1
+                            position = s.position + s.seq.index(seq) + 1
+                            seqs.append({'position': position, 'seq': s.seq, 'chromosome': c})
                 elif 'search_elasticsearch' in request.GET:
                     for S, c in chromosome_to_search:
                         q = SearchQuerySet().all().filter(text__contains=seq).models(S)
@@ -79,7 +83,7 @@ def search(request):
                     for c in cs:
                         pos = ChromosomeSequence.objects.find_all_positions(c, seq)
                         for p in pos:
-                            seqs.append({'id': p, 'seq': c.get_substring(p-20, 40+len(seq)), 'chromosome': c.name})
+                            seqs.append({'position': p, 'seq': c.get_substring(p-20, 40+len(seq)), 'chromosome': c.name})
 
                 final_time = time.time()
                 context['search_time'] = final_time - initial_time

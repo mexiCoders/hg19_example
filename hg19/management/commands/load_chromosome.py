@@ -43,6 +43,7 @@ class Command(BaseCommand):
         i = 0
         ln = 0
         seq = ''
+        pos = 0
         set_autocommit(False)
         while l:
             ln += 1
@@ -56,18 +57,17 @@ class Command(BaseCommand):
                 else:
                     seq += l
                 while len(seq) >= reg_len:
-                    s = Sequence(seq=seq[:reg_len])
+                    s = Sequence(seq=seq[:reg_len], position=pos)
                     s.save()
+                    pos += len(seq[:reg_len])
                     seq = seq[reg_len:]
                     i += 1
                     if i % commit_len == 0:
                         print l, ln
                         commit()
         if seq:
-            s = Sequence(seq=seq)
+            s = Sequence(seq=seq, position=pos)
             s.save()
         commit()
         set_autocommit(True)
         f.close()
-
-
