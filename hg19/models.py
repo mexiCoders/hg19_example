@@ -156,38 +156,38 @@ class ChromosomeSequenceManager(models.Manager):
     def get_queryset(self):
         return super(ChromosomeSequenceManager, self).get_queryset().defer('sequence')
 
-    def find_all_positions(self, chromosome, query, limit=100):
+    def find_all_positions(self, chromosome, seq, limit=100):
         """ Returns an array with the positions of the occurrences of a substring in a chromosome
         """
         cursor = connection.cursor()
+        search_length = 200000
         sql = """
-            select strpos(substr(sequence, %s, char_length(sequence)), %s)
+            select strpos(substr(sequence, %s, %s), %s)
             from hg19_chromosomesequence
             where id = %s
             ;
         """
+        chromosome_length = chromosome.get_length()
         positions = []
-        pos = 1
-        found = True
-        count = 0
-        while found and count < limit:
-            count += 1
-            found = False
-            start_search = pos
-            if pos > 1:
-                start_search = pos + 1
-            cursor.execute(sql, (start_search, query, chromosome.id))
+        pos = self.find_position(chromosome, seq)
+        if pos is None or pos < 1:
+            return positions
+        pos += 1
+        start_search = pos + 1
+        positions.append(pos)
+        while start_search < chromosome_length:
+            cursor.execute(sql, (start_search, search_length, seq, chromosome.id))
             for row in cursor.fetchall():
                 if row[0] > 0:
-                    found = True
-                    if positions:
-                        pos += row[0]
-                    else:
-                        pos += row[0] - 1
-                    positions.append(pos)
+                    pos = start_search + row[0]
+                    start_search += row[0]
+                    positions.append(pos-1)
+                # not found
+                else:
+                    start_search += search_length - len(seq)
         return positions
 
-    def find_position(self, chromosome, query):
+    def find_position(self, chromosome, seq):
         """ Returns the position of the first occurrence of a substring in a chromosome
         """
         cursor = connection.cursor()
@@ -197,7 +197,7 @@ class ChromosomeSequenceManager(models.Manager):
             where id = %s
             ;
         """
-        cursor.execute(sql, (query, chromosome.id))
+        cursor.execute(sql, (seq, chromosome.id))
         for row in cursor.fetchall():
             return row[0] - 1
         return None

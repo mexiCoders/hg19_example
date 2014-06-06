@@ -71,7 +71,7 @@ def search(request):
                     for c in cs:
                         pos = ChromosomeSequence.objects.find_all_positions(c, seq)
                         for p in pos:
-                            seqs.append({'position': p, 'seq': c.get_substring(p-20, 40+len(seq)), 'chromosome': c.name})
+                            seqs.append({'position': p, 'seq': c.get_substring(p-50, 100+len(seq)), 'chromosome': c.name})
 
                 final_time = time.time()
                 context['search_time'] = final_time - initial_time
