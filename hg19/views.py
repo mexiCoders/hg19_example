@@ -4,8 +4,6 @@ from django.db import models
 from django.db.models.loading import get_model
 import django_tables2 as tables
 import time
-from haystack.query import SearchQuerySet
-from search_indexes import SequenceMIndex
 from django.utils.safestring import mark_safe
 from models import ChromosomeSequence
 import utils
@@ -65,16 +63,6 @@ def search(request):
                             #start count from 1
                             position = s.position + s.seq.index(seq) + 1
                             seqs.append({'position': position, 'seq': s.seq, 'chromosome': c})
-                elif 'search_elasticsearch' in request.GET:
-                    for S, c in chromosome_to_search:
-                        q = SearchQuerySet().all().filter(text__contains=seq).models(S)
-                        for r in q:
-                            s = S.objects.get(id=r.pk)
-                            # haystack or elasticsearch gives similar matches, not exact
-                            if seq in s.seq:
-                                seqs.append({'id': s.id, 'seq': s.seq, 'chromosome': c})
-                                if len(seqs) > limit:
-                                    break
                 elif 'search_postbis' in request.GET:
                     if chromosome:
                         cs = ChromosomeSequence.objects.filter(name=chromosome)
