@@ -7,6 +7,7 @@ import time
 from django.utils.safestring import mark_safe
 from models import ChromosomeSequence
 import utils
+from operator import itemgetter
 
 
 class SeqColumn(tables.Column):
@@ -104,6 +105,7 @@ def local_alignment(request):
     if request.method == 'GET' and 'search' in request.GET:
         form = LocalAlignmentForm(request.GET)
         if form.is_valid():
+            sort = request.GET.get('sort', '-score')
             seq = form.cleaned_data['seq']
             chromosome = form.cleaned_data['chromosome']
             if seq:
@@ -139,6 +141,11 @@ def local_alignment(request):
                                 row = {'chromosome': c.name, 'position': start+begin, 'score': score, 'sequences': aln_c[b:e] + ',' + aln_seq[b:e]}
                                 rows.append(row)
                             start += length
+                    if (sort.startswith('-')):
+                        rows = sorted(rows, key=itemgetter(sort[1:]))
+                        rows.reverse()
+                    else:
+                        rows = sorted(rows, key=itemgetter(sort))
                     table = LocalAlignmentTable(rows)
                     context['table'] = table
 
