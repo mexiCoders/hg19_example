@@ -8,6 +8,8 @@ from django.utils.safestring import mark_safe
 from models import ChromosomeSequence
 import utils
 from operator import itemgetter
+from multiprocessing import Pool
+from hg19_example.settings import PROCESS_POOL_SIZE
 
 def index(request):
     template = 'hg19/index.html'
@@ -102,6 +104,25 @@ class LocalAlignmentTable(tables.Table):
     score = tables.Column()
     sequences = SequencesColumn(verbose_name='Sequences')
 
+
+def local_alignment_precess(params):
+    start = params[0]
+    c_seq = params[1]
+    seq = params[2]
+    chromosme_name = params[3]
+    rows = []
+    alns = utils.local_alignment(c_seq, seq)
+    for aln in alns:
+        aln_c, aln_seq, score, begin, end = aln
+        b = begin
+        if b > 20:
+            b = b - 20
+        e = end + 20
+        row = {'chromosome': chromosme_name, 'position': start+begin, 'score': score, 'sequences': aln_c[b:e] + ',' + aln_seq[b:e]}
+        rows.append(row)
+    return rows
+
+
 def local_alignment(request):
     context = {}
     form = LocalAlignmentForm()
@@ -120,30 +141,29 @@ def local_alignment(request):
                     for m in models.get_models():
                         if m.__name__.startswith('Sequence'):
                             chromosome_to_search.append((m, m.__name__.replace('Sequence', '')))
+
                 initial_time = time.time()
                 method = form.cleaned_data['search_method']
                 if method == 'PostBIS':
                     if chromosome:
-                        cs = ChromosomeSequence.objects.filter(name=chromosome)
+                        cs = ChromosomeSequence.objects.filter(id=chromosome)
                     else:
                         cs = ChromosomeSequence.objects.all()
                     rows = []
                     for c in cs:
+                        pool = Pool(PROCESS_POOL_SIZE)
                         length = 10000
                         start = 0
                         c_length = c.get_length()
+                        sequences = []
                         while start < c_length:
                             c_seq = c.get_substring(start, length)
-                            alns = utils.local_alignment(c_seq, seq)
-                            if alns:
-                                aln_c, aln_seq, score, begin, end = alns[0]
-                                b = begin
-                                if b > 20:
-                                    b = b - 20
-                                e = end + 20
-                                row = {'chromosome': c.name, 'position': start+begin, 'score': score, 'sequences': aln_c[b:e] + ',' + aln_seq[b:e]}
-                                rows.append(row)
+                            sequences.append((start, c_seq, seq, c.name))
                             start += length
+                        res = pool.map(local_alignment_precess, sequences)
+                        for r in res:
+                            rows.extend(r)
+                        pool.terminate()
                     if (sort.startswith('-')):
                         rows = sorted(rows, key=itemgetter(sort[1:]))
                         rows.reverse()
