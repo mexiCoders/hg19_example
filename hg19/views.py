@@ -11,6 +11,9 @@ from operator import itemgetter
 from multiprocessing import Pool
 from hg19_example.settings import PROCESS_POOL_SIZE
 
+def index(request):
+    template = 'hg19/index.html'
+    return render(request, template, {})
 
 class SeqColumn(tables.Column):
     def render(self, value, record, **kwords):

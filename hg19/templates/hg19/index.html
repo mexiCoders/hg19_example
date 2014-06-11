@@ -1,0 +1,16 @@
+{% extends 'hg19/base.html' %}
+
+{% block body %}
+    <div class="row">
+        <div class="well form-container col-md-10 col-md-offset-1">
+            <p>Welcome</p>
+            <h3>With this application you can:</h3>
+            <ul>
+                <li>Load chromosome data stored in HG19 file format into a database for quick access.</li>
+                <li><a href="{% url 'search' %}">Search</a> for specific nucleotide sequences within the file records.</li>
+                <li><a href="{% url 'local_alignment' %}">Align</a> specific DNA sequences with the nucleotide chains in the HG19 file</li>
+            </ul>
+        </div>    
+    </div>
+
+{% endblock %}

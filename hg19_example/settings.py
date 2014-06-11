@@ -37,9 +37,10 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # external
+    'bootstrap3',
     'south',
     'django_tables2',
-    'bootstrap3',
+    'crispy_forms',
     # internal
     'hg19',
 )
@@ -57,6 +58,8 @@ ROOT_URLCONF = 'hg19_example.urls'
 
 WSGI_APPLICATION = 'hg19_example.wsgi.application'
 
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+CRISPY_FAIL_SILENTLY = not DEBUG
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
