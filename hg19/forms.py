@@ -1,4 +1,5 @@
 from django import forms
+from crispy_forms.helper import FormHelper
 
 class SearchForm(forms.Form):
     seq = forms.CharField(required=False, label='DNA sequence', min_length=8, max_length=100)
@@ -7,7 +8,9 @@ class SearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
         self.fields['chromosome'].choices = [('', 'Any')] +  [(i, i) for i in range(1, 23)] + [('X', 'X'), ('Y', 'Y'), ('M', 'M')]
-
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.form_class = 'form-inline'
 
 class LocalAlignmentForm(forms.Form):
     seq = forms.CharField(required=False, label='DNA sequence', min_length=12, max_length=200)
@@ -18,3 +21,7 @@ class LocalAlignmentForm(forms.Form):
         super(LocalAlignmentForm, self).__init__(*args, **kwargs)
         self.fields['chromosome'].choices = [('', 'Any')] +  [(i, i) for i in range(1, 23)] + [('X', 'X'), ('Y', 'Y'), ('M', 'M')]
         self.fields['search_method'].choices = [('PostBIS', 'PostBIS'), ('Postgresql', 'Postgresql')]
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.form_class = 'form-inline'
+

@@ -1,0 +1,87 @@
+.navbar-blue {
+    background-color:#428bca; 
+    color:white; 
+    border-color:#428bca;
+    }
+
+.navbar-blue a {
+    color:white;
+    }
+
+.navbar-brand a {
+    color:white;
+    }
+
+.container-main {
+    margin-top:50px;
+    padding-top:50px;
+}
+
+.mark_text {
+    background-color: #FFFF00
+}
+
+.form-group {
+    padding-right: 15px;
+}
+
+.table-container {
+    margin: 20px 0;
+}
+
+.table-container tr:hover td{
+    background-color: #C6EFF4 !important;
+}
+
+.label-md {
+    font-size: 14px;
+}
+
+.search_time {
+    margin-right: 15px;
+}
+
+.form-container {
+    padding: 30px;
+}
+
+.sequences {
+    text-align:center;
+}
+
+.table-container tbody tr td{
+    vertical-align:middle;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  /* Margin bottom by footer height */
+  margin-bottom: 30px;
+}
+#footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 30px;
+  background-color: #f5f5f5;
+}
+
+
+/* Custom page CSS
+-------------------------------------------------- */
+/* Not required for template or sticky footer method. */
+
+.container {
+  width: auto;
+  max-width: 680px;
+  padding: 0 15px;
+}
+.container .text-muted {
+  margin: 5px 0;
+}

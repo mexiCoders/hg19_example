@@ -9,6 +9,9 @@ from models import ChromosomeSequence
 import utils
 from operator import itemgetter
 
+def index(request):
+    template = 'hg19/index.html'
+    return render(request, template, {})
 
 class SeqColumn(tables.Column):
     def render(self, value, record, **kwords):

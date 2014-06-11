@@ -1,9 +1,11 @@
-{% extends "hg19/base_menu.html" %}
+{% extends "hg19/base.html" %}
 {% load staticfiles %}
 {% load render_table from django_tables2 %}
 {% load bootstrap3 %}
+{% load crispy_forms_tags %}
 
 {% block head %}
+    <title>Hg19 Explorer | Local Alignment Search</title>
     <style>
     table {
         font-family:courier, "courier new", monospace;
@@ -14,15 +16,32 @@
     </style>
 {% endblock %}
 
+
 {% block body %}
-    <form action='.' method="get">
-    {{ form }}
-    <input type="submit" value="Search" name="search"/>
-    </form>
+    <div class="row">
+        <div class="well form-container col-md-10 col-md-offset-1">
+            <div class="text-center">
+                <form class="form-inline" action='.' method="get">
+                    {% crispy form %}
+                    <div class="form-group" style="vertical-align:bottom;">
+                        <input class="btn btn-primary" type="submit" value="Search" name="search"/>
+                    </div>
+                </form>
+            </div>
+        </div>    
+    </div>
 
     {% if table %}
-        {% render_table table %}
+    <div class="row">
+        <div class="pull-right search_time">
+            <span class="label label-success label-md">Search time</span> <span class="label label-default label-md">{{ search_time }} s</span> 
+        </div>
+    </div>
+    <div class="table-container">
         <br>
-        Search time: {{ search_time }} s
+        {% render_table table %}
+    </div>
     {% endif %}
 {% endblock %}
+
+
