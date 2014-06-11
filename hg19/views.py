@@ -105,13 +105,13 @@ class LocalAlignmentTable(tables.Table):
     sequences = SequencesColumn(verbose_name='Sequences')
 
 
-def local_alignment_precess(params):
+def pairwise2_local_alignment_process(params):
     start = params[0]
     c_seq = params[1]
     seq = params[2]
     chromosme_name = params[3]
     rows = []
-    alns = utils.local_alignment(c_seq, seq)
+    alns = utils.pairwise2_local_alignment(c_seq, seq)
     for aln in alns:
         aln_c, aln_seq, score, begin, end = aln
         b = begin
@@ -121,6 +121,19 @@ def local_alignment_precess(params):
         row = {'chromosome': chromosme_name, 'position': start+begin, 'score': score, 'sequences': aln_c[b:e] + ',' + aln_seq[b:e]}
         rows.append(row)
     return rows
+
+
+def swalign_local_alignment_process(params):
+    start = params[0]
+    c_seq = params[1]
+    seq = params[2]
+    c = params[3]
+    res = utils.swalign_local_alignment(c_seq, seq)
+    pos =  start+res['q_pos']
+    sequences = c.get_substring(pos-20, len(seq)+40) + ',' + ('-'*20 + seq + '-'*20)
+    if res['score'] > 0:
+        return {'chromosome': c.name, 'position': pos, 'score': res['score'], 'sequences': sequences}
+    return None
 
 
 def local_alignment(request):
@@ -144,12 +157,12 @@ def local_alignment(request):
 
                 initial_time = time.time()
                 method = form.cleaned_data['search_method']
-                if method == 'PostBIS':
-                    if chromosome:
-                        cs = ChromosomeSequence.objects.filter(id=chromosome)
-                    else:
-                        cs = ChromosomeSequence.objects.all()
-                    rows = []
+                if chromosome:
+                    cs = ChromosomeSequence.objects.filter(id=chromosome)
+                else:
+                    cs = ChromosomeSequence.objects.all()
+                rows = []
+                if method == 'pairwise2':
                     for c in cs:
                         pool = Pool(PROCESS_POOL_SIZE)
                         length = 10000
@@ -160,18 +173,34 @@ def local_alignment(request):
                             c_seq = c.get_substring(start, length)
                             sequences.append((start, c_seq, seq, c.name))
                             start += length
-                        res = pool.map(local_alignment_precess, sequences)
+                        res = pool.map(pairwise2_local_alignment_process, sequences)
                         for r in res:
                             rows.extend(r)
                         pool.terminate()
-                    if (sort.startswith('-')):
-                        rows = sorted(rows, key=itemgetter(sort[1:]))
-                        rows.reverse()
-                    else:
-                        rows = sorted(rows, key=itemgetter(sort))
-                    table = LocalAlignmentTable(rows)
-                    context['table'] = table
+                elif method == 'swalign':
+                    for c in cs:
+                        pool = Pool(PROCESS_POOL_SIZE)
+                        length = 10000
+                        start = 0
+                        c_length = c.get_length()
+                        sequences = []
+                        while start < c_length:
+                            c_seq = c.get_substring(start, length)
+                            sequences.append((start, c_seq, seq, c))
+                            start += length
+                        res = pool.map(swalign_local_alignment_process, sequences)
+                        for r in res:
+                            if r:
+                                rows.append(r)
+                        pool.terminate()
+                if (sort.startswith('-')):
+                    rows = sorted(rows, key=itemgetter(sort[1:]))
+                    rows.reverse()
+                else:
+                    rows = sorted(rows, key=itemgetter(sort))
 
+                table = LocalAlignmentTable(rows)
+                context['table'] = table
                 final_time = time.time()
                 context['search_time'] = final_time - initial_time
     context['form'] = form

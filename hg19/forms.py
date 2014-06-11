@@ -26,7 +26,7 @@ class LocalAlignmentForm(forms.Form):
             chromosomes.append((c.id, c.name))
 
         self.fields['chromosome'].choices = chromosomes
-        self.fields['search_method'].choices = [('PostBIS', 'PostBIS'), ('Postgresql', 'Postgresql')]
+        self.fields['search_method'].choices = [('pairwise2', 'pairwise2'), ('swalign', 'swalign')]
         self.helper = FormHelper()
         self.helper.form_tag = False
         self.helper.form_class = 'form-inline'
